@@ -36,7 +36,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseMove, (byte)dx, (byte)dy, 0);
+                SendHWCmd(BaseCommands.MouseMove, (byte)(127 + dx), (byte)(127 + dy), 127);
             }
             else
                 mouse_event(MOUSEEVENTF_MOVE, dx, dy, 0, 0);
@@ -46,7 +46,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseDown, 1, 0, 0);
+                SendHWCmd(BaseCommands.MouseDown, 1, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
@@ -56,7 +56,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseUp, 1, 0, 0);
+                SendHWCmd(BaseCommands.MouseUp, 1, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
@@ -66,7 +66,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseDown, 2, 0, 0);
+                SendHWCmd(BaseCommands.MouseDown, 2, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
@@ -76,7 +76,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseUp, 2, 0, 0);
+                SendHWCmd(BaseCommands.MouseUp, 2, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
@@ -86,7 +86,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseDown, 4, 0, 0);
+                SendHWCmd(BaseCommands.MouseDown, 4, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_MIDDLEDOWN, 0, 0, 0, 0);
@@ -96,7 +96,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseUp, 4, 0, 0);
+                SendHWCmd(BaseCommands.MouseUp, 4, 0, 0);
             }
             else
                 mouse_event(MOUSEEVENTF_MIDDLEUP, 0, 0, 0, 0);
@@ -110,7 +110,7 @@ namespace IRKeyboard
         {
             if (UseHardwareInput)
             {
-                SendHWCmd(BaseCommand.MouseMove, 0, 0, (byte)dtstance);
+                SendHWCmd(BaseCommands.MouseMove, 0, 0, (byte)(dtstance + 127));
             }
             else
                 mouse_event(MOUSEEVENTF_WHEEL, 0, 0, dtstance, 0);

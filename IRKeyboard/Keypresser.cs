@@ -21,7 +21,7 @@ namespace IRKeyboard
         {
             var ascii = KeyCodeMapAscii.GetAscii(keycode);
             if (UseHardwareInput && ascii != 0)
-                SendHWCmd(BaseCommand.KeyPress, ascii, 0, 0);
+                SendHWCmd(BaseCommands.KeyPress, ascii, 0, 0);
             else
             {
                 KeyDown(keycode);
@@ -33,7 +33,7 @@ namespace IRKeyboard
         {
             var ascii = KeyCodeMapAscii.GetAscii(keycode);
             if (UseHardwareInput && ascii != 0)
-                SendHWCmd(BaseCommand.KeyDown, ascii, 0, 0);
+                SendHWCmd(BaseCommands.KeyDown, ascii, 0, 0);
             else
             {
                 keybd_event(keycode, 0, 0, 0);
@@ -44,7 +44,7 @@ namespace IRKeyboard
         {
             var ascii = KeyCodeMapAscii.GetAscii(keycode);
             if (UseHardwareInput && ascii != 0)
-                SendHWCmd(BaseCommand.KeyUp, ascii, 0, 0);
+                SendHWCmd(BaseCommands.KeyUp, ascii, 0, 0);
             else
             {
                 keybd_event(keycode, 0, 2, 0);

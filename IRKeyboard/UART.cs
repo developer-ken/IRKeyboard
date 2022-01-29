@@ -21,17 +21,7 @@ namespace IRKeyboard
         {
             port = new SerialPort(portname);
             port.RtsEnable = true;
-            recv = new Thread(new ThreadStart(() =>
-            {
-                while ((!port.IsOpen) && runflag) Thread.Sleep(0);//等待端口打开
-                while (runflag)
-                {
-                    var result = port.ReadLine().Replace("\r","");
-                    receive_tmp = result;
-                    Debug.WriteLine(receive_tmp);
-                    LineReceivedEvent?.Invoke(result);
-                }
-            }));
+            
         }
 
         public static string[] ListPorts()
@@ -65,6 +55,21 @@ namespace IRKeyboard
 
         public void Init()
         {
+            recv = new Thread(new ThreadStart(() =>
+            {
+                while ((!port.IsOpen) && runflag) Thread.Sleep(0);//等待端口打开
+                while (runflag)
+                {
+                    try
+                    {
+                        var result = port.ReadLine().Replace("\r", "");
+                        receive_tmp = result;
+                        Debug.WriteLine(receive_tmp);
+                        LineReceivedEvent?.Invoke(result);
+                    }
+                    catch { }
+                }
+            }));
             runflag = true;
             port.Open();
             while ((!port.IsOpen) && runflag) Thread.Sleep(0);//等待端口打开

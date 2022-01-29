@@ -52,16 +52,38 @@ namespace IRKeyboard
             hardwareio = mapping.ContainsKey("UseHardwareInput")
                    && mapping.Value<bool>("UseHardwareInput");
 
-            notifyIcon1.ShowBalloonTip(2, "红外遥控器", "红外遥控器已启用\n"+ (hardwareio?"正在使用VDevice":"正在使用WinApi"), ToolTipIcon.None);
-            SendCommand(BaseCommand.LightLevel, 100);
+            notifyIcon1.ShowBalloonTip(2, "红外遥控器", "红外遥控器已启用\n" + (hardwareio ? "正在使用VDevice" : "正在使用WinApi"), ToolTipIcon.None);
+            SendCommand(BaseCommands.ProbeEEPROM);
+            SendCommand(BaseCommands.LightLevel, 100);
         }
-        
+
         int keycode = -1;
         string lastcode = "0";
+        DateTime lasttime;
 
         private void Uart_LineReceived(string obj)
         {
-            label1.Text = obj;
+            if (obj[0] == '!') return;
+            //label1.Text = obj;
+
+            if (obj == "EEPENABLED")
+            {
+                SendCommand(BaseCommands.LightLevel, 0);
+                notifyIcon1.ShowBalloonTip(2, "设备EEPROM中含有配置文件", "该配置文件的优先级将高于本地配置文件。\n" +
+                    "如果希望使用本地配置文件，应当擦除设备中的配置文件。", ToolTipIcon.None);
+            }
+            else
+            if (obj.IndexOf("DEHYPER") > -1)
+            {
+                hyper = false;
+                notifyIcon1.Icon = Properties.Resources.normal;
+            }
+            else
+            if (obj.IndexOf("HYPER") > -1)
+            {
+                hyper = true;
+                notifyIcon1.Icon = Properties.Resources.hyper;
+            }
 
             if (keycode != -1)
             {
@@ -79,10 +101,14 @@ namespace IRKeyboard
             else
             {
                 if (obj == "0")
-                    obj = lastcode;
+                {
+                    if (lastcode != "0" && (DateTime.Now - lasttime).TotalSeconds < 2)
+                        obj = lastcode;
+                    else return;
+                }
                 else
                     lastcode = obj;
-
+                lasttime = DateTime.Now;
                 bool hardwareio = mapping.ContainsKey("UseHardwareInput")
                     && mapping.Value<bool>("UseHardwareInput");
 
@@ -131,12 +157,12 @@ namespace IRKeyboard
                             if (hyper)
                             {
                                 notifyIcon1.Icon = Properties.Resources.hyper;
-                                SendCommand(BaseCommand.LightBreath, 26, 255);
+                                SendCommand(BaseCommands.LightBreath, 26, 255);
                             }
                             else
                             {
                                 notifyIcon1.Icon = Properties.Resources.normal;
-                                SendCommand(BaseCommand.LightLevel, 100);
+                                SendCommand(BaseCommands.LightLevel, 100);
                             }
                             break;
                     }
@@ -245,10 +271,32 @@ namespace IRKeyboard
         {
             var result = MessageBox.Show("您将要把本地配置文件烧写到设备，设备中的原有配置文件会被覆盖。\n" +
                 "烧写成功后，部分功能可脱离本程序使用。对于存在配置文件的设备，将会优先使用设备中的配置文件。\n" +
-                "部分无法编译成设备配置文件的操作仍将读取本地配置文件。", "将配置文件烧写到控制器",MessageBoxButtons.OKCancel);
-            if(result == DialogResult.OK)
+                "部分无法编译成设备配置文件的操作仍将读取本地配置文件。", "将配置文件烧写到控制器", MessageBoxButtons.OKCancel);
+            if (result == DialogResult.OK)
             {
+                var bin = ConfigCompiler.GetBytesFromJsonConfig(mapping);
+                if (bin.Count > 256)
+                {
+                    MessageBox.Show("您的本地配置文件转换为设备配置文件后太大。\n" +
+                        "请尝试删减部分操作或使用Jump复用重复操作。\n" +
+                        "配置文件：" + bin.Count + " 块\n" +
+                        "设备可用容量：256 块", "无法写入配置文件", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                MessageBox.Show(ConfigCompiler.Log, "编译完成");
+                WriteBinaryToEEPROM(bin);
+                uart.uart.Abort();
+                uart.uart.Init();
+                notifyIcon1.ShowBalloonTip(2, "红外遥控器", "写入完成，重启本程序、重新插拔接收器来获得完整体验。\n共写入" + bin.Count + "个数据块", ToolTipIcon.None);
+            }
+        }
 
+        private void WriteBinaryToEEPROM(List<Block> blocks)
+        {
+            SendCommand(BaseCommands.ProgramEEPROM);
+            foreach (Block blk in blocks)
+            {
+                uart.uart.port.Write(blk.ByteArray, 0, 4);
             }
         }
     }

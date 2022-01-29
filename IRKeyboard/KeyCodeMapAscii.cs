@@ -42,6 +42,10 @@ namespace IRKeyboard
             {//0~9
                 return keycode;
             }
+            if (96 <= keycode && keycode <= 105)
+            {//0~9 小键盘区
+                return (byte)(keycode - 48);
+            }
             if (65 <= keycode && keycode <= 90)
             {//A~Z
                 return (byte)(keycode + 32);
